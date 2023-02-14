@@ -1,0 +1,103 @@
+15:36:47.117042 IP 104.18.13.33.https > 172.17.72.149.64712: Flags [P.], seq 741074562:741074603, ack 3955447699, win 8, options [nop,nop,TS val 581019613 ecr 2427658728], length 41
+15:36:47.117122 IP 172.17.72.149.64712 > 104.18.13.33.https: Flags [.], ack 41, win 2047, options [nop,nop,TS val 2427663417 ecr 581019613], length 0
+15:36:47.300257 IP yyz12s07-in-f10.1e100.net.https > 172.17.72.149.63776: quic, protected
+15:36:47.302833 IP 172.17.72.149.63776 > yyz12s07-in-f10.1e100.net.https: quic, protected
+15:36:47.479914 IP 104.18.13.33.https > 172.17.72.149.64712: Flags [P.], seq 41:68, ack 1, win 8, options [nop,nop,TS val 581019919 ecr 2427663417], length 27
+15:36:47.480127 IP 172.17.72.149.64712 > 104.18.13.33.https: Flags [.], ack 68, win 2047, options [nop,nop,TS val 2427663780 ecr 581019919], length 0
+15:36:47.505173 IP 172.17.72.149.63776 > yyz12s07-in-f10.1e100.net.https: quic, protected
+15:36:47.512554 IP yyz12s07-in-f10.1e100.net.https > 172.17.72.149.63776: quic, protected
+15:36:47.540157 IP 162.159.135.234.https > 172.17.72.149.64707: Flags [P.], seq 2148825608:2148825797, ack 3382413473, win 8, options [nop,nop,TS val 2514171556 ecr 2330919073], length 189
+15:36:47.540421 IP 172.17.72.149.64707 > 162.159.135.234.https: Flags [.], ack 189, win 2589, options [nop,nop,TS val 2330919659 ecr 2514171556], length 0
+15:36:47.720701 IP 172.17.72.149.63776 > yyz12s07-in-f10.1e100.net.https: quic, protected
+15:36:47.728775 IP yyz12s07-in-f10.1e100.net.https > 172.17.72.149.63776: quic, protected
+15:36:47.927486 IP 172.17.72.149.64686 > 25.224.186.35.bc.googleusercontent.com.https: Flags [.], ack 2791030086, win 2048, length 0
+15:36:47.936969 IP 172.17.72.149.63776 > yyz12s07-in-f10.1e100.net.https: quic, protected
+15:36:47.948010 IP 172.17.72.149.64702 > bh-in-f188.1e100.net.5228: Flags [.], ack 3502251093, win 2048, length 0
+15:36:48.032749 IP 25.224.186.35.bc.googleusercontent.com.https > 172.17.72.149.64686: Flags [.], ack 1, win 266, options [nop,nop,TS val 1907427572 ecr 2781546415], length 0
+15:36:48.032751 IP yyz12s07-in-f10.1e100.net.https > 172.17.72.149.63776: quic, protected
+15:36:48.032752 IP bh-in-f188.1e100.net.5228 > 172.17.72.149.64702: Flags [.], ack 1, win 265, options [nop,nop,TS val 1102119130 ecr 2949417975], length 0
+15:36:48.241285 IP 172.17.72.149.63776 > yyz12s07-in-f10.1e100.net.https: quic, protected
+15:36:48.248094 IP yyz12s07-in-f10.1e100.net.https > 172.17.72.149.63776: quic, protected
+15:36:48.457138 IP 172.17.72.149.63776 > yyz12s07-in-f10.1e100.net.https: quic, protected
+15:36:48.498285 IP 172.17.72.149.64658 > 104.18.19.102.https: Flags [P.], seq 2602010640:2602010746, ack 1071534223, win 9108, options [nop,nop,TS val 851754198 ecr 1202392312], length 106
+15:36:48.535063 IP yyz12s07-in-f10.1e100.net.https > 172.17.72.149.63776: quic, protected
+15:36:48.736688 IP 172.17.72.149.63776 > yyz12s07-in-f10.1e100.net.https: quic, protected
+15:36:48.744331 IP yyz12s07-in-f10.1e100.net.https > 172.17.72.149.63776: quic, protected
+15:36:48.765980 IP 162.159.135.234.https > 172.17.72.149.64707: Flags [.], seq 189:1427, ack 1, win 8, options [nop,nop,TS val 2514172782 ecr 2330919659], length 1238
+15:36:48.765983 IP 162.159.135.234.https > 172.17.72.149.64707: Flags [P.], seq 1427:1577, ack 1, win 8, options [nop,nop,TS val 2514172782 ecr 2330919659], length 150
+15:36:48.766193 IP 172.17.72.149.64707 > 162.159.135.234.https: Flags [.], ack 1577, win 2567, options [nop,nop,TS val 2330920884 ecr 2514172782], length 0
+15:36:48.778460 IP 172.17.72.149.57250 > 13.107.138.8.https: Flags [S], seq 511503261, win 65535, options [mss 1460,nop,wscale 6,nop,nop,TS val 3352905752 ecr 0,sackOK,eol], length 0
+15:36:48.809309 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [S.], seq 576169915, ack 511503262, win 65535, options [mss 1250,nop,wscale 8,nop,nop,sackOK], length 0
+15:36:48.810563 IP 172.17.72.149.57250 > 13.107.138.8.https: Flags [.], ack 1, win 4096, length 0
+15:36:48.810565 IP 172.17.72.149.57250 > 13.107.138.8.https: Flags [P.], seq 1:518, ack 1, win 4096, length 517
+15:36:48.824550 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [.], ack 518, win 16384, length 0
+15:36:49.052018 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [.], seq 1:1251, ack 518, win 16384, length 1250
+15:36:49.052020 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [.], seq 1251:2501, ack 518, win 16384, length 1250
+15:36:49.052422 IP 172.17.72.149.57250 > 13.107.138.8.https: Flags [.], ack 2501, win 4096, length 0
+15:36:49.053729 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [.], seq 2501:3751, ack 518, win 16384, length 1250
+15:36:49.053730 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [P.], seq 3751:4008, ack 518, win 16384, length 257
+15:36:49.053731 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [P.], seq 2758:4008, ack 518, win 16384, length 1250
+15:36:49.053732 IP 104.18.13.33.https > 172.17.72.149.64712: Flags [P.], seq 68:109, ack 1, win 8, options [nop,nop,TS val 581021452 ecr 2427663780], length 41
+15:36:49.053924 IP 172.17.72.149.64712 > 104.18.13.33.https: Flags [.], ack 109, win 2047, options [nop,nop,TS val 2427665354 ecr 581021452], length 0
+15:36:49.055832 IP 172.17.72.149.57250 > 13.107.138.8.https: Flags [.], ack 4008, win 4072, options [nop,nop,sack 1 {2758:4008}], length 0
+15:36:49.071237 IP 172.17.72.149.57250 > 13.107.138.8.https: Flags [P.], seq 518:676, ack 4008, win 4096, length 158
+15:36:49.084191 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [.], ack 676, win 16384, length 0
+15:36:49.085543 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [P.], seq 4008:4059, ack 676, win 16384, length 51
+15:36:49.085544 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [P.], seq 4059:4128, ack 676, win 16384, length 69
+15:36:49.131367 IP 172.17.72.149.57250 > 13.107.138.8.https: Flags [.], ack 4128, win 4094, length 0
+15:36:49.132784 IP 172.17.72.149.57250 > 13.107.138.8.https: Flags [P.], seq 676:1048, ack 4128, win 4096, length 372
+15:36:49.145063 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [.], ack 1048, win 16382, length 0
+15:36:49.145064 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [P.], seq 4128:4166, ack 1048, win 16382, length 38
+15:36:49.145260 IP 172.17.72.149.57250 > 13.107.138.8.https: Flags [P.], seq 1048:1384, ack 4166, win 4095, length 336
+15:36:49.152582 IP 172.17.72.149.63776 > yyz12s07-in-f10.1e100.net.https: quic, protected
+15:36:49.158651 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [.], ack 1384, win 16386, length 0
+15:36:49.160145 IP yyz12s07-in-f10.1e100.net.https > 172.17.72.149.63776: quic, protected
+15:36:49.173770 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [.], seq 4166:5416, ack 1384, win 16386, length 1250
+15:36:49.173771 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [P.], seq 5416:5568, ack 1384, win 16386, length 152
+15:36:49.173771 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [P.], seq 5568:5606, ack 1384, win 16386, length 38
+15:36:49.173943 IP 172.17.72.149.57250 > 13.107.138.8.https: Flags [.], ack 5606, win 4073, length 0
+15:36:49.176513 IP 172.17.72.149.57250 > 13.107.138.8.https: Flags [P.], seq 1384:1430, ack 5606, win 4096, length 46
+15:36:49.176955 IP 172.17.72.149.57250 > 13.107.138.8.https: Flags [FP.], seq 1430:1461, ack 5606, win 4096, length 31
+15:36:49.208888 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [.], ack 1430, win 16386, length 0
+15:36:49.208889 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [.], ack 1462, win 16386, length 0
+15:36:49.208889 IP 13.107.138.8.https > 172.17.72.149.57250: Flags [F.], seq 5606, ack 1462, win 16386, length 0
+15:36:49.209128 IP 172.17.72.149.57250 > 13.107.138.8.https: Flags [.], ack 5607, win 4096, length 0
+15:36:49.609038 IP 172.17.72.149.56990 > pindns05.mcmaster.ca.domain: 34999+ PTR? 149.72.17.172.in-addr.arpa. (44)
+15:36:49.613389 IP pindns05.mcmaster.ca.domain > 172.17.72.149.56990: 34999 NXDomain* 0/1/0 (126)
+15:36:49.969305 IP 172.17.72.149.63776 > yyz12s07-in-f10.1e100.net.https: quic, protected
+15:36:50.105984 IP yyz12s07-in-f10.1e100.net.https > 172.17.72.149.63776: quic, protected
+15:36:50.183924 IP 162.159.135.234.https > 172.17.72.149.64707: Flags [P.], seq 1577:1707, ack 1, win 8, options [nop,nop,TS val 2514174200 ecr 2330920884], length 130
+15:36:50.184154 IP 172.17.72.149.64707 > 162.159.135.234.https: Flags [.], ack 1707, win 2587, options [nop,nop,TS val 2330922302 ecr 2514174200], length 0
+15:36:50.294377 IP 172.17.72.149.7578 > blackadder.cis.mcmaster.ca.domain: 44393+ A? calendar.cron.com. (35)
+15:36:50.294644 IP 172.17.72.149.64658 > 104.18.19.102.https: Flags [P.], seq 106:157, ack 1, win 9108, options [nop,nop,TS val 851755995 ecr 1202392312], length 51
+15:36:50.294758 IP 172.17.72.149.64658 > 104.18.19.102.https: Flags [F.], seq 157, ack 1, win 9108, options [nop,nop,TS val 851755995 ecr 1202392312], length 0
+15:36:50.300589 IP blackadder.cis.mcmaster.ca.domain > 172.17.72.149.7578: 44393 2/2/12 A 104.18.18.102, A 104.18.19.102 (389)
+15:36:50.301597 IP 172.17.72.149.54496 > 104.18.18.102.https: Flags [S], seq 3125775781, win 65535, options [mss 1460,nop,wscale 6,nop,nop,TS val 176894113 ecr 0,sackOK,eol], length 0
+15:36:50.334983 IP 104.18.18.102.https > 172.17.72.149.54496: Flags [S.], seq 1693583668, ack 3125775782, win 65160, options [mss 1250,sackOK,TS val 3340590744 ecr 176894113,nop,wscale 13], length 0
+15:36:50.335183 IP 172.17.72.149.54496 > 104.18.18.102.https: Flags [.], ack 1, win 2050, options [nop,nop,TS val 176894146 ecr 3340590744], length 0
+15:36:50.338862 IP 172.17.72.149.54496 > 104.18.18.102.https: Flags [P.], seq 1:555, ack 1, win 2050, options [nop,nop,TS val 176894150 ecr 3340590744], length 554
+15:36:50.345431 IP 104.18.18.102.https > 172.17.72.149.54496: Flags [.], ack 555, win 8, options [nop,nop,TS val 3340590782 ecr 176894150], length 0
+15:36:50.350159 IP 104.18.18.102.https > 172.17.72.149.54496: Flags [P.], seq 1:213, ack 555, win 8, options [nop,nop,TS val 3340590786 ecr 176894150], length 212
+15:36:50.350263 IP 172.17.72.149.54496 > 104.18.18.102.https: Flags [.], ack 213, win 2047, options [nop,nop,TS val 176894161 ecr 3340590786], length 0
+15:36:50.353057 IP 162.159.135.234.https > 172.17.72.149.64707: Flags [P.], seq 1707:1790, ack 1, win 8, options [nop,nop,TS val 2514174369 ecr 2330922302], length 83
+15:36:50.353141 IP 172.17.72.149.64707 > 162.159.135.234.https: Flags [.], ack 1790, win 2588, options [nop,nop,TS val 2330922471 ecr 2514174369], length 0
+15:36:50.371590 IP 172.17.72.149.54496 > 104.18.18.102.https: Flags [P.], seq 555:619, ack 213, win 2048, options [nop,nop,TS val 176894183 ecr 3340590786], length 64
+15:36:50.372095 IP 172.17.72.149.54496 > 104.18.18.102.https: Flags [P.], seq 619:711, ack 213, win 2048, options [nop,nop,TS val 176894183 ecr 3340590786], length 92
+15:36:50.373182 IP 172.17.72.149.54496 > 104.18.18.102.https: Flags [P.], seq 711:1086, ack 213, win 2048, options [nop,nop,TS val 176894184 ecr 3340590786], length 375
+15:36:50.378255 IP 104.18.18.102.https > 172.17.72.149.54496: Flags [P.], seq 213:725, ack 619, win 8, options [nop,nop,TS val 3340590814 ecr 176894183], length 512
+15:36:50.378432 IP 172.17.72.149.54496 > 104.18.18.102.https: Flags [.], ack 725, win 2040, options [nop,nop,TS val 176894190 ecr 3340590814], length 0
+15:36:50.378803 IP 172.17.72.149.54496 > 104.18.18.102.https: Flags [P.], seq 1086:1117, ack 725, win 2048, options [nop,nop,TS val 176894190 ecr 3340590814], length 31
+15:36:50.379011 IP 104.18.18.102.https > 172.17.72.149.54496: Flags [P.], seq 725:756, ack 711, win 8, options [nop,nop,TS val 3340590815 ecr 176894183], length 31
+15:36:50.379062 IP 172.17.72.149.54496 > 104.18.18.102.https: Flags [.], ack 756, win 2047, options [nop,nop,TS val 176894190 ecr 3340590815], length 0
+15:36:50.385132 IP 104.18.18.102.https > 172.17.72.149.54496: Flags [.], ack 1117, win 8, options [nop,nop,TS val 3340590821 ecr 176894184], length 0
+15:36:50.446597 IP 104.18.18.102.https > 172.17.72.149.54496: Flags [P.], seq 756:988, ack 1117, win 8, options [nop,nop,TS val 3340590882 ecr 176894184], length 232
+15:36:50.446730 IP 172.17.72.149.54496 > 104.18.18.102.https: Flags [.], ack 988, win 2044, options [nop,nop,TS val 176894258 ecr 3340590882], length 0
+15:36:50.473159 IP 172.17.72.149.54496 > 104.18.18.102.https: Flags [P.], seq 1117:1152, ack 988, win 2048, options [nop,nop,TS val 176894284 ecr 3340590882], length 35
+15:36:50.617775 IP 172.17.72.149.54496 > 104.18.18.102.https: Flags [P.], seq 1117:1152, ack 988, win 2048, options [nop,nop,TS val 176894429 ecr 3340590882], length 35
+15:36:50.624354 IP 162.159.135.234.https > 172.17.72.149.64707: Flags [P.], seq 1790:2297, ack 1, win 8, options [nop,nop,TS val 2514174546 ecr 2330922471], length 507
+15:36:50.624674 IP 172.17.72.149.64707 > 162.159.135.234.https: Flags [.], ack 2297, win 2589, options [nop,nop,TS val 2330922743 ecr 2514174546], length 0
+15:36:50.630414 IP 104.18.18.102.https > 172.17.72.149.54496: Flags [.], ack 1152, win 8, options [nop,nop,TS val 3340591066 ecr 176894429,nop,nop,sack 1 {1117:1152}], length 0
+15:36:50.891812 IP 172.17.72.149.64712 > 104.18.13.33.https: Flags [P.], seq 1:32, ack 109, win 2048, options [nop,nop,TS val 2427667192 ecr 581021452], length 31
+15:36:50.897970 IP 104.18.13.33.https > 172.17.72.149.64712: Flags [.], ack 32, win 8, options [nop,nop,TS val 581023393 ecr 2427667192], length 0
+15:36:50.969974 IP 172.17.72.149.64598 > 57.74.98.34.bc.googleusercontent.com.https: Flags [F.], seq 466362478, ack 880474597, win 2048, options [nop,nop,TS val 2907583870 ecr 1420786099], length 0
+

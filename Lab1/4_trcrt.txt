@@ -1,0 +1,10 @@
+traceroute to compeng4dn4.mooo.com (99.236.34.223), 64 hops max, 52 byte packets
+ 1  172.17.96.1 (172.17.96.1)  518.521 ms  3.489 ms  2.625 ms
+ 2  core-vss-wifi.net.mcmaster.ca (172.26.20.10)  3.990 ms  3.023 ms  3.970 ms
+ 3  campus-border.net.mcmaster.ca (130.113.69.4)  3.478 ms  4.022 ms  3.549 ms
+ 4  66.97.23.21 (66.97.23.21)  3.100 ms  5.030 ms  3.195 ms
+ 5  66.97.16.141 (66.97.16.141)  9.686 ms  5.548 ms  8.069 ms
+ 6  rogers.ip4.torontointernetxchange.net (206.108.34.29)  6.277 ms  4.568 ms  4.776 ms
+ 7  209.148.235.221 (209.148.235.221)  6.606 ms  7.796 ms  6.624 ms
+ 8  3039-dgw01.hstr.rmgt.net.rogers.com (209.148.237.94)  9.162 ms  15.160 ms  14.362 ms
+ 9  24.156.158.102 (24.156.158.102)  8.605 ms  8.487 ms  9.375 ms
