@@ -8,18 +8,17 @@ import os
 
 class Server:
     def __init__(self):
-        print("We have created a Server object: ", self)
         host = socket.gethostname()  # as both code is running on same pc
+        self.commands = {"GMA": "Midterm Average", "GL1A": "Lab 1", "GL2A": "Lab 2", "GL3A": "Lab 3", "GL4A": "Lab 4", "GEA": "Exam Average", "GG": "Grades"}
+        self.parsed_data = {}
         load_dotenv()
         port = int(os.getenv("PORT"))  # socket server port number
         self.course_grade_file = os.getenv("COURSE_GRADES_FILE")
         self.server_socket = socket.socket()  # get instance
         self.server_socket.bind((host, port))  # bind host address and port together
-        self.parsed_data = {}
-        self.commands = {"GMA": "Midterm Average", "GL1A": "Lab 1", "GL2A": "Lab 2", "GL3A": "Lab 3", "GL4A": "Lab 4", "GEA": "Exam Average", "GG": "Grades"}
 
+        print("We have created a Server object: ", self)
         self.print_course_grades() # Print and parse the data into a dictionary
-
         print(f"Listening for connections on port {port}")
 
         self.server_program()
@@ -28,8 +27,7 @@ class Server:
     def print_course_grades(self):
         cleaned_data = self.clean_data()
         print("Data read from CSV file:")
-        for line in cleaned_data:
-            print(line)
+        print("\n".join(cleaned_data))
         self.parsed_data = self.parse_data(cleaned_data)
 
     def clean_data(self):
@@ -43,9 +41,7 @@ class Server:
     def parse_data(self, cleaned_data):
         self.parsed_data = {}
         for line in cleaned_data:
-            if line.startswith("Name"):
-                continue
-            else:
+            if not line.startswith("Name"):
                 student_name, student_number, key, lab1, lab2, lab3, lab4, midterm, exam1, exam2, exam3, exam4 = line.split(",")
                 self.parsed_data[int(student_number)] = {"key": key, "Student Name": student_name, "Midterm": int(midterm), "Lab 1": int(lab1), "Lab 2": int(lab2), "Lab 3": int(lab3), "Lab 4": int(lab4), "Exam 1": int(exam1), "Exam 2": int(exam2), "Exam 3": int(exam3), "Exam 4": int(exam4)}
         return self.parsed_data
@@ -118,10 +114,9 @@ class Server:
                 break
             else:
                 return_value = self.run_command(id, command) # calculate the value to return
-            encrypted_message = self.encrypt_string(return_value, self.parsed_data[int(id)]["key"]) # encrypt the message
-            print("Encrypted message:", encrypted_message)
-            # data = input(' -> ')
-            conn.send(encrypted_message)  # send data to the client
+                encrypted_message = self.encrypt_string(return_value, self.parsed_data[int(id)]["key"]) # encrypt the message
+                print("Encrypted message:", encrypted_message)
+                conn.send(encrypted_message)  # send data to the client
 
         conn.close()  # close the connection
 
