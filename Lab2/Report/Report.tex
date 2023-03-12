@@ -37,6 +37,17 @@
     \maketitle
     \newpage
 
+    \begin{section}{Member Contributions}
+        \begin{enumerate}
+            \item Ashpan Raskar \\
+            Created the server class and its class fields and methods. Created the main method.
+            \item Dharak Verma \\
+            Created the client class and its class fields and methods.
+3
+        \end{enumerate}
+
+    \end{section}
+
     \begin{section}{Server Pseudo Code}
         \begin{verbatim}
             Setup the host based on the current IP address
@@ -156,9 +167,5 @@
         In the encrypt and decrypt string functions, the fernet encryption method is used with a symmetric secret key (the same key for encryption and decryption), this is encoded/decoded using UTF-8 character set.
 
         The main method works by initializing the server or the client based on the flag being passed when running the file using the "-r" or "--role" flag. If it is run with the "-r client" flag, then the client class object is initialized, if it is run with the "-r server" flag, then the server class object is initialized.
-    \end{section}
-    \begin{section}{Contributions}
-        Ashpan - Created the server class and its class fields and methods. Created the main method\\
-        Dharak - Created the client class and its class fields and methods.
     \end{section}
 \end{document}
