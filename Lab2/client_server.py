@@ -4,8 +4,6 @@ from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 import os
 
-
-
 class Server:
     def __init__(self):
         host = socket.gethostname()  # as both code is running on same pc
@@ -96,27 +94,32 @@ class Server:
         while True:
             # receive data stream. it won't accept data packet greater than 1024 bytes
             data = conn.recv(1024).decode()
-            if not data:
-                # if data is not received break
-                break
-            id, command = data.split(",")
-            return_value = ""
+            if data:
+                id, command = data.split(",")
+                return_value = ""
 
-            print(f"Received {command} command from the client")
-            if(int(id) not in self.parsed_data):
-                print("User not found")
-                break
+                print(f"Received {command} command from the client")
+                
+                if(int(id) not in self.parsed_data):
+                    print("User not found")
+                    conn.shutdown(socket.SHUT_RDWR)
+                else:
+                    print("User found")
+                    if command not in self.commands:
+                        print("Invalid command")
+                        conn.shutdown(socket.SHUT_RDWR)
+                    else:
+                        return_value = self.run_command(id, command) # calculate the value to return
+                        encrypted_message = self.encrypt_string(return_value, self.parsed_data[int(id)]["key"]) # encrypt the message
+                        print("Encrypted message:", encrypted_message)
+                        conn.send(encrypted_message)  # send data to the client
             else:
-                print("User found")
+                self.server_socket.listen(1)
+                conn, address = self.server_socket.accept()  # accept new connection
+                incoming_ip_address = address[0]
+                incoming_port = address[1]
+                print(f"Connection received from {incoming_ip_address} on port {incoming_port}")
 
-            if command not in self.commands:
-                print("Invalid command")
-                break
-            else:
-                return_value = self.run_command(id, command) # calculate the value to return
-                encrypted_message = self.encrypt_string(return_value, self.parsed_data[int(id)]["key"]) # encrypt the message
-                print("Encrypted message:", encrypted_message)
-                conn.send(encrypted_message)  # send data to the client
 
         conn.close()  # close the connection
 
@@ -161,7 +164,7 @@ class Client:
     def decode_message_bytes(self, message_bytes, student_number):
         key = self.secret_key_dict[int(student_number)]
         fernet = Fernet(key)
-        decrypted_message_bytes =  fernet.decrypt(message_bytes)
+        decrypted_message_bytes = fernet.decrypt(message_bytes)
         return decrypted_message_bytes.decode('utf-8')
 
     def client_program(self):
@@ -173,19 +176,18 @@ class Client:
             print(f"Command entered: {command}")
             if command not in self.commands:
                 print("Invalid command")
-                continue
             else:
                 print(f"Fetching {self.commands[command]}")
-            command = student_number + "," + command
-            self.client_socket.send(command.encode())  # send command
+                command = student_number + "," + command
+                self.client_socket.send(command.encode())  # send command
 
-            encrpyted_message_bytes = self.client_socket.recv(1024).decode()  # receive response
-            message = self.decode_message_bytes(encrpyted_message_bytes, student_number)
+                encrpyted_message_bytes = self.client_socket.recv(1024).decode()  # receive response
+                print(encrpyted_message_bytes)
+                message = self.decode_message_bytes(encrpyted_message_bytes, student_number)
 
-            print('Received from server: ' + message)  # show in terminal
+                print('Received from server: ' + message)  # show in terminal
 
         self.client_socket.close()  # close the connection
-
 
 if __name__ == '__main__':
     roles = {'client': Client,'server': Server}
