@@ -47,10 +47,12 @@ FILESIZE_FIELD_LEN       = 8 # 8 byte file size field.
 # be a 1-byte integer. For now, we only define the "GET" command,
 # which tells the server to send a file.
 
-CMD = {"GET" : 2}
+CMD = {
+    "GET" : 1,
+    "PUT" : 2,
+    "LIST" : 3,}
 
 MSG_ENCODING = "utf-8"
-SOCKET_TIMEOUT = 4
 
 ########################################################################
 # recv_bytes frontend to recv
@@ -59,9 +61,6 @@ SOCKET_TIMEOUT = 4
 # Call recv to read bytecount_target bytes from the socket. Return a
 # status (True or False) and the received butes (in the former case).
 def recv_bytes(sock, bytecount_target):
-    # Be sure to timeout the socket if we are given the wrong
-    # information.
-    sock.settimeout(SOCKET_TIMEOUT)
     try:
         byte_recv_count = 0 # total received bytes
         recv_bytes = b''    # complete received message
@@ -74,15 +73,7 @@ def recv_bytes(sock, bytecount_target):
                 return(False, b'')
             byte_recv_count += len(new_bytes)
             recv_bytes += new_bytes
-        # Turn off the socket timeout if we finish correctly.
-        sock.settimeout(None)
         return (True, recv_bytes)
-    # If the socket times out, something went wrong. Return a False
-    # status.
-    except socket.timeout:
-        sock.settimeout(None)
-        print("recv_bytes: Recv socket timeout!")
-        return (False, b'')
 
 ########################################################################
 # SERVER
@@ -99,14 +90,8 @@ class Server:
     FILE_NOT_FOUND_MSG = "Error: Requested file is not available!"
 
     REMOTE_FOLDER = os.getcwd() + "/remote_files/"
-    # This is the file that the client will request using a GET.
-    # REMOTE_FILE_NAME = "greek.txt"
-    # REMOTE_FILE_NAME = "twochars.txt"
-    REMOTE_FILE_NAME = "ocanada_greek.txt"
-    # REMOTE_FILE_NAME = "ocanada_english.txt"
 
     def __init__(self):
-        # self.list_available_files()
         self.create_listen_socket()
         udp_thread = threading.Thread(target=self.process_udp_connections_forever)
         tcp_thread = threading.Thread(target=self.process_tcp_connections_forever)
@@ -131,7 +116,7 @@ class Server:
             self.fsp_socket.listen(Server.BACKLOG)
             print(f"Listening for file sharing connections on port {Server.FSP_PORT}...")
         except Exception as msg:
-            print(msg)
+            print("Create listen socket:", msg)
             exit()
 
     def process_udp_connections_forever(self):
@@ -166,85 +151,65 @@ class Server:
         # Process a connection and see if the client wants a file that
         # we have.
 
-        # Read the command and see if it is a GET command.
         status, cmd_field = recv_bytes(connection, CMD_FIELD_LEN)
-        # If the read fails, give up.
-        if not status:
-            print("Closing connection ...")
-            connection.close()
-            return
-        # Convert the command to our native byte order.
         cmd = int.from_bytes(cmd_field, byteorder='big')
-        # Give up if we don't get a GET command.
-        if cmd != CMD["GET"]:
-            print("GET command not received. Closing connection ...")
-            connection.close()
-            return
+        if cmd == CMD["GET"]:
+            status, filename_size_field = recv_bytes(connection, FILENAME_SIZE_FIELD_LEN)
+            if not status:
+                print("Closing connection ...")
+                connection.close()
+                return
 
-        # GET command is good. Read the filename size (bytes).
-        status, filename_size_field = recv_bytes(connection, FILENAME_SIZE_FIELD_LEN)
-        if not status:
-            print("Closing connection ...")
-            connection.close()
-            return
-        filename_size_bytes = int.from_bytes(filename_size_field, byteorder='big')
-        if not filename_size_bytes:
-            print("Connection is closed!")
-            connection.close()
-            return
+            filename_size_bytes = int.from_bytes(filename_size_field, byteorder='big')
+            if not filename_size_bytes:
+                print("Connection is closed!")
+                connection.close()
+                return
 
-        print('Filename size (bytes) = ', filename_size_bytes)
+            status, filename_bytes = recv_bytes(connection, filename_size_bytes)
+            if not status:
+                print("Closing connection ...")
+                connection.close()
+                return
+            if not filename_bytes:
+                print("Closing connection ...")
+                connection.close()
+                return
 
-        # Now read and decode the requested filename.
-        status, filename_bytes = recv_bytes(connection, filename_size_bytes)
-        if not status:
-            print("Closing connection ...")
-            connection.close()
-            return
-        if not filename_bytes:
-            print("Connection is closed!")
-            connection.close()
-            return
+            filename = filename_bytes.decode(MSG_ENCODING)
+            print('Requested filename = ', filename)
+            filename = Server.REMOTE_FOLDER + filename
 
-        filename = filename_bytes.decode(MSG_ENCODING)
-        print('Requested filename = ', filename)
+            try:
+                file = open(filename, 'r').read()
+            except FileNotFoundError:
+                print(Server.FILE_NOT_FOUND_MSG)
+                connection.close()
+                return
 
-        ################################################################
-        # See if we can open the requested file. If so, send it.
+            # Encode the file contents into bytes, record its size and
+            # generate the file size field used for transmission.
+            file_bytes = file.encode(MSG_ENCODING)
+            file_size_bytes = len(file_bytes)
+            file_size_field = file_size_bytes.to_bytes(FILESIZE_FIELD_LEN, byteorder='big')
 
-        # If we can't find the requested file, shutdown the connection
-        # and wait for someone else.
-        try:
-            file = open(filename, 'r').read()
-        except FileNotFoundError:
-            print(Server.FILE_NOT_FOUND_MSG)
-            connection.close()
-            return
+            # Create the packet to be sent with the header field.
+            pkt = file_size_field + file_bytes
 
-        # Encode the file contents into bytes, record its size and
-        # generate the file size field used for transmission.
-        file_bytes = file.encode(MSG_ENCODING)
-        file_size_bytes = len(file_bytes)
-        file_size_field = file_size_bytes.to_bytes(FILESIZE_FIELD_LEN, byteorder='big')
+            try:
+                # Send the packet to the connected client.
+                connection.sendall(pkt)
+                print("Sending file: ", filename)
+            except socket.error:
+                # If the client has closed the connection, close the
+                # socket on this end.
+                print("Closing client connection ...")
+                connection.close()
+                return
+            finally:
+                connection.close()
+                return
 
-        # Create the packet to be sent with the header field.
-        pkt = file_size_field + file_bytes
-
-        try:
-            # Send the packet to the connected client.
-            connection.sendall(pkt)
-            print("Sending file: ", filename)
-            print("file size field: ", file_size_field.hex(), "\n")
-            # time.sleep(20)
-        except socket.error:
-            # If the client has closed the connection, close the
-            # socket on this end.
-            print("Closing client connection ...")
-            connection.close()
-            return
-        finally:
-            connection.close()
-            return
 
 ########################################################################
 # CLIENT
@@ -264,28 +229,28 @@ class Client:
 
     def __init__(self):
         self.get_socket()
-        # self.service_discovery()
         self.run_commands()
-        # self.connect_to_server()
-        # self.get_file()
-        # self.scan()
 
 
     def run_commands(self):
         while True:
-            cmd = input("Enter a command: ")
-            if cmd == "exit":
+            cmd = input("Enter a command: ").lower()
+            if cmd == "bye":
                 break
             elif cmd == "scan":
                 self.scan()
             elif cmd == "llist":
                 self.list_local_files()
-            elif cmd.startswith("Connect"):
+            elif cmd == "rlist":
+                break
+            elif cmd.startswith("connect"):
                 address = cmd.split(" ")[1]
                 port = int(cmd.split(" ")[2])
                 self.connect_to_server((address, port))
-            elif cmd == "get":
-                self.get_file()
+            elif cmd.startswith("get"):
+                self.get_file(cmd.split(" ")[1])
+            elif cmd.startswith("put"):
+                break
             else:
                 print("Invalid command.")
 
@@ -298,7 +263,7 @@ class Client:
             sdp_sock.sendto(encoded_msg, ("255.255.255.255", Client.SDP_PORT))
             response, addr = sdp_sock.recvfrom(1024)
             decoded_response = response.decode(MSG_ENCODING)
-            print(decoded_response + " found at " + str(addr))
+            print(decoded_response + " found at " + str(addr[0]), str(Server.FSP_PORT))
         finally:
             sdp_sock.close()
 
@@ -307,7 +272,6 @@ class Client:
             print(file)
 
     def get_socket(self):
-
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         except Exception as msg:
@@ -322,7 +286,7 @@ class Client:
             print("connect_to_server:", msg)
             exit()
 
-    def get_file(self):
+    def get_file(self, filename):
 
         ################################################################
         # Generate a file transfer request to the server
@@ -331,15 +295,10 @@ class Client:
         cmd_field = CMD["GET"].to_bytes(CMD_FIELD_LEN, byteorder='big')
 
         # Create the packet filename field.
-        filename_field_bytes = Server.REMOTE_FILE_NAME.encode(MSG_ENCODING)
+        filename_field_bytes = filename.encode(MSG_ENCODING)
 
         # Create the packet filename size field.
         filename_size_field = len(filename_field_bytes).to_bytes(FILENAME_SIZE_FIELD_LEN, byteorder='big')
-
-        # Create the packet.
-        print("CMD field: ", cmd_field.hex())
-        print("Filename_size_field: ", filename_size_field.hex())
-        print("Filename field: ", filename_field_bytes.hex())
 
         pkt = cmd_field + filename_size_field + filename_field_bytes
 
@@ -347,10 +306,11 @@ class Client:
         self.socket.sendall(pkt)
 
         ################################################################
-        # Process the file transfer repsonse from the server
+        # Process the file transfer response from the server
 
         # Read the file size field returned by the server.
         status, file_size_bytes = recv_bytes(self.socket, FILESIZE_FIELD_LEN)
+        print("after recv_bytes")
         if not status:
             print("Closing connection ...")
             self.socket.close()
@@ -371,15 +331,15 @@ class Client:
             print("Closing connection ...")
             self.socket.close()
             return
-        # print("recvd_bytes_total = ", recvd_bytes_total)
         # Receive the file itself.
         try:
             # Create a file using the received filename and store the
             # data.
+            downloaded_file = Client.CLIENT_FILES_DIR + filename
             print("Received {} bytes. Creating file: {}" \
-                  .format(len(recvd_bytes_total), Client.DOWNLOADED_FILE_NAME))
+                  .format(len(recvd_bytes_total), filename))
 
-            with open(Client.DOWNLOADED_FILE_NAME, 'w') as f:
+            with open(downloaded_file, 'w') as f:
                 recvd_file = recvd_bytes_total.decode(MSG_ENCODING)
                 f.write(recvd_file)
             print(recvd_file)
