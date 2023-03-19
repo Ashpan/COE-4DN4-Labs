@@ -61,19 +61,18 @@ MSG_ENCODING = "utf-8"
 # Call recv to read bytecount_target bytes from the socket. Return a
 # status (True or False) and the received butes (in the former case).
 def recv_bytes(sock, bytecount_target):
-    try:
-        byte_recv_count = 0 # total received bytes
-        recv_bytes = b''    # complete received message
-        while byte_recv_count < bytecount_target:
-            # Ask the socket for the remaining byte count.
-            new_bytes = sock.recv(bytecount_target-byte_recv_count)
-            # If ever the other end closes on us before we are done,
-            # give up and return a False status with zero bytes.
-            if not new_bytes:
-                return(False, b'')
-            byte_recv_count += len(new_bytes)
-            recv_bytes += new_bytes
-        return (True, recv_bytes)
+    byte_recv_count = 0 # total received bytes
+    recv_bytes = b''    # complete received message
+    while byte_recv_count < bytecount_target:
+        # Ask the socket for the remaining byte count.
+        new_bytes = sock.recv(bytecount_target-byte_recv_count)
+        # If ever the other end closes on us before we are done,
+        # give up and return a False status with zero bytes.
+        if not new_bytes:
+            return(False, b'')
+        byte_recv_count += len(new_bytes)
+        recv_bytes += new_bytes
+    return (True, recv_bytes)
 
 ########################################################################
 # SERVER
