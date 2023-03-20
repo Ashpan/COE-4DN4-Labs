@@ -44,6 +44,8 @@ CMD_FIELD_LEN            = 1 # 1 byte commands sent from the client.
 FILENAME_SIZE_FIELD_LEN  = 1 # 1 byte file name size field.
 FILESIZE_FIELD_LEN       = 8 # 8 byte file size field.
 
+FILE_NOT_FOUND_MSG = "Error: Requested file is not available!"
+
 # Define a dictionary of commands. The actual command field value must
 # be a 1-byte integer. For now, we only define the "GET" command,
 # which tells the server to send a file.
@@ -87,8 +89,6 @@ class Server:
     FSP_PORT = 50000
     RECV_SIZE = 1024
     BACKLOG = 5
-
-    FILE_NOT_FOUND_MSG = "Error: Requested file is not available!"
 
     REMOTE_FOLDER = os.getcwd() + "/remote_files/"
     # Only for debugging purposes
@@ -186,7 +186,7 @@ class Server:
             try:
                 file = open(filename, 'r').read()
             except FileNotFoundError:
-                print(Server.FILE_NOT_FOUND_MSG)
+                print(FILE_NOT_FOUND_MSG)
                 connection.close()
                 return
 
@@ -275,7 +275,7 @@ class Client:
             elif cmd.startswith("get"):
                 self.get_file(cmd.split(" ")[1])
             elif cmd.startswith("put"):
-                break
+                self.upload_file(cmd.split(" ")[1])
             else:
                 print("Invalid command.")
 
@@ -386,6 +386,48 @@ class Client:
             print()
             exit(1)
 
+    def upload_file(self, filename):
+        # Encode the command
+        cmd_field = CMD["PUT"].to_bytes(CMD_FIELD_LEN, byteorder='big')
+        # Encode the file name
+        filename_bytes = filename.encode(MSG_ENCODING)
+        # Encode the size of the file name
+        filename_size = len(filename_bytes)
+        filename_size_bytes = filename_size.to_bytes(1, byteorder='big')
+
+        # Open the file and convert it to bytes
+        try:
+            file_path = self.CLIENT_FILES_DIR + filename
+        except FileNotFoundError:
+            print(FILE_NOT_FOUND_MSG)
+            self.socket.close()
+            return
+ 
+        file = open(file_path, 'r').read()
+
+        # Encode the file contents into bytes, record its size and
+        # generate the file size field used for transmission.
+        file_bytes = file.encode(MSG_ENCODING)
+        file_size_bytes = len(file_bytes)
+        file_size_field = file_size_bytes.to_bytes(FILESIZE_FIELD_LEN, byteorder='big')
+
+        # Create the packet to be sent with the header field.
+        pkt = cmd_field + filename_size_bytes + filename_bytes + file_size_field + file_bytes
+
+        try:
+            # Send the packet to the connected client.
+            self.socket.sendall(pkt)
+            print("Sending file: ", filename)
+        except socket.error:
+            # If the client has closed the connection, close the
+            # socket on this end.
+            print("Closing client connection ...")
+            self.socket.close()
+            return
+        finally:
+            self.socket.close()
+            return
+    
 ########################################################################
 
 if __name__ == '__main__':
