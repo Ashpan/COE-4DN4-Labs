@@ -91,8 +91,7 @@ class Server:
     BACKLOG = 5
 
     REMOTE_FOLDER = os.getcwd() + "/remote_files/"
-    # Only for debugging purposes
-    REMOTE_DEBUG_FOLDER = os.getcwd() + "/Lab_3/remote_files/"
+    REMOTE_FOLDER_DEBUG = os.getcwd() + "/Lab_3/remote_files/"
 
     def __init__(self):
         self.create_listen_socket()
@@ -235,6 +234,62 @@ class Server:
             finally:
                 connection.close()
                 return
+            
+        # Client is trying to send us a file.    
+        if cmd == CMD["PUT"]:
+            status, filename_size_field = recv_bytes(connection, FILENAME_SIZE_FIELD_LEN)
+            if not status:
+                print("Closing connection ...")
+                connection.close()
+                return
+
+            filename_size_bytes = int.from_bytes(filename_size_field, 'big', signed=False)
+            if not filename_size_bytes:
+                print("Connection is closed!")
+                connection.close()
+                return
+
+            status, filename_bytes = recv_bytes(connection, filename_size_bytes)
+            if not status:
+                print("Closing connection ...")
+                connection.close()
+                return
+            if not filename_bytes:
+                print("Closing connection ...")
+                connection.close()
+                return
+
+            filename = filename_bytes.decode(MSG_ENCODING)
+            print('Uploading filename = ', filename)
+
+            status, filesize_bytes = recv_bytes(connection, FILESIZE_FIELD_LEN)
+            if not status:
+                print("Closing connection ...")
+                connection.close()
+                return
+            if not filesize_bytes:
+                print("Closing connection ...")
+                connection.close()
+                return
+            
+            filesize = int.from_bytes(filesize_bytes, byteorder='big')
+
+            status, file_bytes = recv_bytes(connection, filesize)
+            if not status:
+                print("Closing connection ...")
+                connection.close()
+                return
+            if not file_bytes:
+                print("Closing connection ...")
+                connection.close()
+                return
+            
+            # filepath = self.REMOTE_FOLDER + filename
+            filepath = self.REMOTE_FOLDER_DEBUG + filename # TODO: Revert pathing after debugging
+
+            # Open in 'wb' mode to create new file and write bytes
+            with open(filepath, "wb") as f:
+                f.write(file_bytes)
 
 ########################################################################
 # CLIENT
@@ -251,6 +306,7 @@ class Client:
     DOWNLOADED_FILE_NAME = "filedownload.txt"
     SERVICE_DISCOVERY_MSG = "SERVICE DISCOVERY"
     CLIENT_FILES_DIR = os.getcwd() + "/client_files/"
+    CLIENT_FILES_DEBUG_DIR = os.getcwd() + "/Lab_3/client_files/"
 
     def __init__(self):
         self.get_socket()
@@ -393,11 +449,12 @@ class Client:
         filename_bytes = filename.encode(MSG_ENCODING)
         # Encode the size of the file name
         filename_size = len(filename_bytes)
-        filename_size_bytes = filename_size.to_bytes(1, byteorder='big')
+        filename_size_bytes = filename_size.to_bytes(FILENAME_SIZE_FIELD_LEN, byteorder='big')
 
         # Open the file and convert it to bytes
         try:
             file_path = self.CLIENT_FILES_DIR + filename
+            # file_path = self.CLIENT_FILES_DEBUG_DIR + filename # TODO: Revert after debugging
         except FileNotFoundError:
             print(FILE_NOT_FOUND_MSG)
             self.socket.close()
