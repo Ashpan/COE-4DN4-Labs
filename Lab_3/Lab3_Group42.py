@@ -94,6 +94,7 @@ class Server:
     REMOTE_FOLDER_DEBUG = os.getcwd() + "/Lab_3/remote_files/"
 
     def __init__(self):
+        self.list_available_files()
         self.create_listen_socket()
         udp_thread = threading.Thread(target=self.process_udp_connections_forever)
         tcp_thread = threading.Thread(target=self.process_tcp_connections_forever)
@@ -280,12 +281,13 @@ class Server:
                     connection.close()
                     return
                 
-                # filepath = self.REMOTE_FOLDER + filename
-                filepath = self.REMOTE_FOLDER_DEBUG + filename # TODO: Revert pathing after debugging
+                filepath = self.REMOTE_FOLDER + filename
 
                 # Open in 'wb' mode to create new file and write bytes
                 with open(filepath, "wb") as f:
                     f.write(file_bytes)
+
+                f.close()
 
 ########################################################################
 # CLIENT
@@ -313,6 +315,7 @@ class Client:
         while True:
             cmd = input("Enter a command: ").lower()
             if cmd == "bye":
+                self.socket.close()
                 break
             elif cmd == "scan":
                 self.scan()
@@ -450,7 +453,6 @@ class Client:
         # Open the file and convert it to bytes
         try:
             file_path = self.CLIENT_FILES_DIR + filename
-            # file_path = self.CLIENT_FILES_DEBUG_DIR + filename # TODO: Revert after debugging
         except FileNotFoundError:
             print(FILE_NOT_FOUND_MSG)
             self.socket.close()
@@ -475,9 +477,6 @@ class Client:
             # If the client has closed the connection, close the
             # socket on this end.
             print("Closing client connection ...")
-            self.socket.close()
-            return
-        finally:
             self.socket.close()
             return
     
