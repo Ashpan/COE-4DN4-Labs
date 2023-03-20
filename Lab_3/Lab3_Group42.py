@@ -34,6 +34,7 @@ import socket
 import argparse
 import threading
 import os
+import json
 
 ########################################################################
 
@@ -50,7 +51,8 @@ FILESIZE_FIELD_LEN       = 8 # 8 byte file size field.
 CMD = {
     "GET" : 1,
     "PUT" : 2,
-    "LIST" : 3,}
+    "LIST" : 3
+}
 
 MSG_ENCODING = "utf-8"
 
@@ -59,7 +61,7 @@ MSG_ENCODING = "utf-8"
 ########################################################################
 
 # Call recv to read bytecount_target bytes from the socket. Return a
-# status (True or False) and the received butes (in the former case).
+# status (True or False) and the received bytes (in the former case).
 def recv_bytes(sock, bytecount_target):
     byte_recv_count = 0 # total received bytes
     recv_bytes = b''    # complete received message
@@ -89,6 +91,8 @@ class Server:
     FILE_NOT_FOUND_MSG = "Error: Requested file is not available!"
 
     REMOTE_FOLDER = os.getcwd() + "/remote_files/"
+    # Only for debugging purposes
+    REMOTE_DEBUG_FOLDER = os.getcwd() + "/Lab_3/remote_files/"
 
     def __init__(self):
         self.create_listen_socket()
@@ -208,7 +212,29 @@ class Server:
             finally:
                 connection.close()
                 return
+            
+        # If the client requests a remote list, send back the file sharing directory listing.
+        if cmd == CMD["LIST"]:
+            # Get the files from the remote folder list
+            rlist = os.listdir(self.REMOTE_FOLDER) 
+            # Encode the list obj into a json serialized string
+            rlist_str = json.dumps(rlist) 
+            rlist_bytes = rlist_str.encode(MSG_ENCODING)
+            rlist_size = len(rlist_bytes)
+            rlist_size_bytes = rlist_size.to_bytes(1, byteorder='big')
 
+            packet = rlist_size_bytes + rlist_bytes
+
+            try:
+                connection.send(packet)
+                print("Sending rlist")
+            except socket.error:
+                print("Closing client connection ...")
+                connection.close()
+                return
+            finally:
+                connection.close()
+                return
 
 ########################################################################
 # CLIENT
@@ -241,7 +267,7 @@ class Client:
             elif cmd == "llist":
                 self.list_local_files()
             elif cmd == "rlist":
-                break
+                self.request_remote_list()
             elif cmd.startswith("connect"):
                 address = cmd.split(" ")[1]
                 port = int(cmd.split(" ")[2])
@@ -268,6 +294,20 @@ class Client:
 
     def list_local_files(self):
         for file in os.listdir(Client.CLIENT_FILES_DIR):
+            print(file)
+
+    def request_remote_list(self):
+        cmd_field = CMD["LIST"].to_bytes(CMD_FIELD_LEN, byteorder='big')
+        self.socket.sendall(cmd_field)
+        # Receive the first byte of the packet, which is the size of the rlist string.
+        # Convert the bytes to hex, then hex to int value
+        rlist_size = int(self.socket.recv(1).hex(), 16)
+        # Get the rest of the rlist data
+        rlist = self.socket.recv(rlist_size).decode()
+        # Reconstruct the json serialized string back to a list
+        rlist_recon = json.loads(rlist)
+
+        for file in rlist_recon:
             print(file)
 
     def get_socket(self):
