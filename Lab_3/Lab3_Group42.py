@@ -153,143 +153,139 @@ class Server:
         # Process a connection and see if the client wants a file that
         # we have.
 
-        status, cmd_field = recv_bytes(connection, CMD_FIELD_LEN)
-        cmd = int.from_bytes(cmd_field, byteorder='big')
-        if cmd == CMD["GET"]:
-            status, filename_size_field = recv_bytes(connection, FILENAME_SIZE_FIELD_LEN)
-            if not status:
-                print("Closing connection ...")
-                connection.close()
-                return
+        while(1):
+            status, cmd_field = recv_bytes(connection, CMD_FIELD_LEN)
+            cmd = int.from_bytes(cmd_field, byteorder='big')
 
-            filename_size_bytes = int.from_bytes(filename_size_field, byteorder='big')
-            if not filename_size_bytes:
-                print("Connection is closed!")
-                connection.close()
-                return
+            if cmd == CMD["GET"]:
+                status, filename_size_field = recv_bytes(connection, FILENAME_SIZE_FIELD_LEN)
+                if not status:
+                    print("Closing connection ...")
+                    connection.close()
+                    return
 
-            status, filename_bytes = recv_bytes(connection, filename_size_bytes)
-            if not status:
-                print("Closing connection ...")
-                connection.close()
-                return
-            if not filename_bytes:
-                print("Closing connection ...")
-                connection.close()
-                return
+                filename_size_bytes = int.from_bytes(filename_size_field, byteorder='big')
+                if not filename_size_bytes:
+                    print("Connection is closed!")
+                    connection.close()
+                    return
 
-            filename = filename_bytes.decode(MSG_ENCODING)
-            print('Requested filename = ', filename)
-            filename = Server.REMOTE_FOLDER + filename
+                status, filename_bytes = recv_bytes(connection, filename_size_bytes)
+                if not status:
+                    print("Closing connection ...")
+                    connection.close()
+                    return
+                if not filename_bytes:
+                    print("Closing connection ...")
+                    connection.close()
+                    return
 
-            try:
-                file = open(filename, 'r').read()
-            except FileNotFoundError:
-                print(FILE_NOT_FOUND_MSG)
-                connection.close()
-                return
+                filename = filename_bytes.decode(MSG_ENCODING)
+                print('Requested filename = ', filename)
+                filename = Server.REMOTE_FOLDER + filename
 
-            # Encode the file contents into bytes, record its size and
-            # generate the file size field used for transmission.
-            file_bytes = file.encode(MSG_ENCODING)
-            file_size_bytes = len(file_bytes)
-            file_size_field = file_size_bytes.to_bytes(FILESIZE_FIELD_LEN, byteorder='big')
+                try:
+                    file = open(filename, 'r').read()
+                except FileNotFoundError:
+                    print(FILE_NOT_FOUND_MSG)
+                    connection.close()
+                    return
 
-            # Create the packet to be sent with the header field.
-            pkt = file_size_field + file_bytes
+                # Encode the file contents into bytes, record its size and
+                # generate the file size field used for transmission.
+                file_bytes = file.encode(MSG_ENCODING)
+                file_size_bytes = len(file_bytes)
+                file_size_field = file_size_bytes.to_bytes(FILESIZE_FIELD_LEN, byteorder='big')
 
-            try:
-                # Send the packet to the connected client.
-                connection.sendall(pkt)
-                print("Sending file: ", filename)
-            except socket.error:
-                # If the client has closed the connection, close the
-                # socket on this end.
-                print("Closing client connection ...")
-                connection.close()
-                return
-            finally:
-                connection.close()
-                return
-            
-        # If the client requests a remote list, send back the file sharing directory listing.
-        if cmd == CMD["LIST"]:
-            # Get the files from the remote folder list
-            rlist = os.listdir(self.REMOTE_FOLDER) 
-            # Encode the list obj into a json serialized string
-            rlist_str = json.dumps(rlist) 
-            rlist_bytes = rlist_str.encode(MSG_ENCODING)
-            rlist_size = len(rlist_bytes)
-            rlist_size_bytes = rlist_size.to_bytes(1, byteorder='big')
+                # Create the packet to be sent with the header field.
+                pkt = file_size_field + file_bytes
 
-            packet = rlist_size_bytes + rlist_bytes
+                try:
+                    # Send the packet to the connected client.
+                    connection.sendall(pkt)
+                    print("Sending file: ", filename)
+                except socket.error:
+                    # If the client has closed the connection, close the
+                    # socket on this end.
+                    print("Closing client connection ...")
+                    connection.close()
+                    return
+                
+            # If the client requests a remote list, send back the file sharing directory listing.
+            if cmd == CMD["LIST"]:
+                # Get the files from the remote folder list
+                rlist = os.listdir(self.REMOTE_FOLDER) 
+                # Encode the list obj into a json serialized string
+                rlist_str = json.dumps(rlist) 
+                rlist_bytes = rlist_str.encode(MSG_ENCODING)
+                rlist_size = len(rlist_bytes)
+                rlist_size_bytes = rlist_size.to_bytes(1, byteorder='big')
 
-            try:
-                connection.send(packet)
-                print("Sending rlist")
-            except socket.error:
-                print("Closing client connection ...")
-                connection.close()
-                return
-            finally:
-                connection.close()
-                return
-            
-        # Client is trying to send us a file.    
-        if cmd == CMD["PUT"]:
-            status, filename_size_field = recv_bytes(connection, FILENAME_SIZE_FIELD_LEN)
-            if not status:
-                print("Closing connection ...")
-                connection.close()
-                return
+                packet = rlist_size_bytes + rlist_bytes
 
-            filename_size_bytes = int.from_bytes(filename_size_field, 'big', signed=False)
-            if not filename_size_bytes:
-                print("Connection is closed!")
-                connection.close()
-                return
+                try:
+                    connection.send(packet)
+                    print("Sending rlist")
+                except socket.error:
+                    print("Closing client connection ...")
+                    connection.close()
+                    return
+                
+            # Client is trying to send us a file.    
+            if cmd == CMD["PUT"]:
+                status, filename_size_field = recv_bytes(connection, FILENAME_SIZE_FIELD_LEN)
+                if not status:
+                    print("Closing connection ...")
+                    connection.close()
+                    return
 
-            status, filename_bytes = recv_bytes(connection, filename_size_bytes)
-            if not status:
-                print("Closing connection ...")
-                connection.close()
-                return
-            if not filename_bytes:
-                print("Closing connection ...")
-                connection.close()
-                return
+                filename_size_bytes = int.from_bytes(filename_size_field, 'big', signed=False)
+                if not filename_size_bytes:
+                    print("Connection is closed!")
+                    connection.close()
+                    return
 
-            filename = filename_bytes.decode(MSG_ENCODING)
-            print('Uploading filename = ', filename)
+                status, filename_bytes = recv_bytes(connection, filename_size_bytes)
+                if not status:
+                    print("Closing connection ...")
+                    connection.close()
+                    return
+                if not filename_bytes:
+                    print("Closing connection ...")
+                    connection.close()
+                    return
 
-            status, filesize_bytes = recv_bytes(connection, FILESIZE_FIELD_LEN)
-            if not status:
-                print("Closing connection ...")
-                connection.close()
-                return
-            if not filesize_bytes:
-                print("Closing connection ...")
-                connection.close()
-                return
-            
-            filesize = int.from_bytes(filesize_bytes, byteorder='big')
+                filename = filename_bytes.decode(MSG_ENCODING)
+                print('Uploading filename = ', filename)
 
-            status, file_bytes = recv_bytes(connection, filesize)
-            if not status:
-                print("Closing connection ...")
-                connection.close()
-                return
-            if not file_bytes:
-                print("Closing connection ...")
-                connection.close()
-                return
-            
-            # filepath = self.REMOTE_FOLDER + filename
-            filepath = self.REMOTE_FOLDER_DEBUG + filename # TODO: Revert pathing after debugging
+                status, filesize_bytes = recv_bytes(connection, FILESIZE_FIELD_LEN)
+                if not status:
+                    print("Closing connection ...")
+                    connection.close()
+                    return
+                if not filesize_bytes:
+                    print("Closing connection ...")
+                    connection.close()
+                    return
+                
+                filesize = int.from_bytes(filesize_bytes, byteorder='big')
 
-            # Open in 'wb' mode to create new file and write bytes
-            with open(filepath, "wb") as f:
-                f.write(file_bytes)
+                status, file_bytes = recv_bytes(connection, filesize)
+                if not status:
+                    print("Closing connection ...")
+                    connection.close()
+                    return
+                if not file_bytes:
+                    print("Closing connection ...")
+                    connection.close()
+                    return
+                
+                # filepath = self.REMOTE_FOLDER + filename
+                filepath = self.REMOTE_FOLDER_DEBUG + filename # TODO: Revert pathing after debugging
+
+                # Open in 'wb' mode to create new file and write bytes
+                with open(filepath, "wb") as f:
+                    f.write(file_bytes)
 
 ########################################################################
 # CLIENT
