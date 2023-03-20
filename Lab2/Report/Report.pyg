@@ -1,0 +1,5 @@
+            from math import log
+            from time import time
+            from multiprocessing import Pool
+            if __name__ == "__main__":
+
