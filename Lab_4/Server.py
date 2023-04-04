@@ -24,6 +24,9 @@ class ChatRoomDirectory:
     def get_room_multicast_group(self, room_name):
         return self.chat_rooms.get(room_name)
 
+    def get_directory_list(self):
+        return self.chat_rooms
+
 class ChatRoomDirectoryServer:
     def __init__(self, ip, port):
         self.directory = ChatRoomDirectory()
@@ -57,6 +60,10 @@ class ChatRoomDirectoryServer:
                             response = f"Multicast group for room {room_name}: {multicast_group, port}"
                         else:
                             response = f"Room {room_name} not found."
+                        client.send(response.encode('utf-8'))
+
+                    elif command == 'getdir':
+                        response = self.directory.get_directory_list()
                         client.send(response.encode('utf-8'))
 
             except Exception as e:

@@ -29,17 +29,29 @@ class MulticastChatClient:
         print("Connected to directory server.")
 
     def join_multicast_group(self, multicast_group):
-        group = socket.inet_aton(multicast_group)
+        try:
+            group = socket.inet_aton(multicast_group)
+        except socket.error:
+            print("Invalid multicast group IP address:", multicast_group)
+            return
+        
+        # TODO: Debug why mreq is not the right format?
         mreq = struct.pack('4sL', group, socket.INADDR_ANY)
-        self.recv_sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-
+        
+        try:
+            self.recv_sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+            print("Successfully joined multicast group:", multicast_group)
+        except socket.error as e:
+            print("Failed to join multicast group:", e)
+            return
+        
     def leave_multicast_group(self, multicast_group):
         group = socket.inet_aton(multicast_group)
         mreq = struct.pack('4sL', group, socket.INADDR_ANY)
         self.recv_sock.setsockopt(socket.IPPROTO_IP, socket.IP_DROP_MEMBERSHIP, mreq)
 
     def create_chat_room(self, room_name, port, multicast_group):
-        self.directory_sock.send(f"makeroom {room_name} {port} {multicast_group}".encode('utf-8'))
+        self.directory_sock.send(f"makeroom {room_name} {multicast_group} {port}".encode('utf-8'))
         response = self.directory_sock.recv(1024).decode('utf-8')
         print(response)
         return "made room" in response.lower()
@@ -48,10 +60,17 @@ class MulticastChatClient:
         self.directory_sock.send(f"GET_MULTICAST_GROUP {room_name}".encode('utf-8'))
         response = self.directory_sock.recv(1024).decode('utf-8')
         print(response)
+
         if "not found" not in response.lower():
-            multicast_group = response.split()[-1]
-            self.join_multicast_group(multicast_group)
-            return True, multicast_group
+            # Find IP address in the response string
+            ip_start = response.find("(") + 1
+            ip_end = response.find(",")
+            # Extract the IP address substring
+            ip_address = response[ip_start:ip_end].strip('\'')
+            self.join_multicast_group(ip_address)
+
+            return True, ip_address
+        
         else:
             print(response)
             return False, None
@@ -93,8 +112,14 @@ class MulticastChatClient:
                 input_str = "CRDS>"
             else:
                 input_str = ">"
+
             message = input(input_str)
-            command, *args = message.split()
+
+            try:
+                command, *args = message.split()
+            # There is only a command, no arguments
+            except ValueError:
+                command = message
 
             if command.lower() == "name":
                 self.NAME = ' '.join(args[0:])
@@ -110,6 +135,7 @@ class MulticastChatClient:
                 if command.lower() == "makeroom":
                     room_name, port, multicast_group = args
                     self.create_chat_room(room_name, port, multicast_group)
+
                 elif command.lower() == "chat":
                     room_name = args[0]
                     success, multicast_group = self.join_chat_room(room_name)
@@ -117,6 +143,12 @@ class MulticastChatClient:
                         print(f"Joined chat room {room_name} with multicast group {multicast_group}.")
                         self.CURRENT_MODE = "CHAT"
                         self.JOINED_ROOM = multicast_group
+
+                elif command.lower() == "getdir":
+                    msg = 'getdir'
+                    self.send(DIRECTORY_SERVER_IP, msg)
+                    response = self.directory_sock.recv(1024).decode('utf-8')
+                    print(response)
 
             elif self.CURRENT_MODE == "CHAT":
                 msg = message
