@@ -38,11 +38,11 @@ class MulticastChatClient:
         mreq = struct.pack('4sL', group, socket.INADDR_ANY)
         self.recv_sock.setsockopt(socket.IPPROTO_IP, socket.IP_DROP_MEMBERSHIP, mreq)
 
-    def create_chat_room(self, room_name, multicast_group):
-        self.directory_sock.send(f"CREATE {room_name} {multicast_group}".encode('utf-8'))
+    def create_chat_room(self, room_name, port, multicast_group):
+        self.directory_sock.send(f"makeroom {room_name} {port} {multicast_group}".encode('utf-8'))
         response = self.directory_sock.recv(1024).decode('utf-8')
         print(response)
-        return "created" in response.lower()
+        return "made room" in response.lower()
 
     def join_chat_room(self, room_name):
         self.directory_sock.send(f"GET_MULTICAST_GROUP {room_name}".encode('utf-8'))
@@ -69,6 +69,7 @@ class MulticastChatClient:
                         name = f"{addr[0]}:{addr[1]}"
                         name_removed_message = decoded_msg
                     print(f"[{name}] {name_removed_message}")
+
             except Exception as e:
                 print(f"[ERROR] {e}")
                 self.recv_sock.close()
@@ -79,10 +80,12 @@ class MulticastChatClient:
             self.send_sock.sendto(msg.encode('utf-8'), (multicast_group, MULTICAST_PORT))
         except Exception:
             traceback.print_exc()
+
     def start(self):
         receive_thread = threading.Thread(target=self.receive)
         receive_thread.start()
         input_str = ""
+
         while True:
             if (self.CURRENT_MODE == "CHAT"):
                 input_str = "CHAT>"
@@ -96,15 +99,17 @@ class MulticastChatClient:
             if command.lower() == "name":
                 self.NAME = ' '.join(args[0:])
                 continue
+
             if self.CURRENT_MODE == "DISCONNECTED":
                 if command.lower() == "connect":
                     self.connect()
                 else:
                     print("You are not connected to the directory server. Please connect first.")
+
             elif self.CURRENT_MODE == "CONNECTED":
                 if command.lower() == "makeroom": #TODO: Add port number as a parameter
-                    room_name, multicast_group = args
-                    self.create_chat_room(room_name, multicast_group)
+                    room_name, port, multicast_group = args
+                    self.create_chat_room(room_name, port, multicast_group)
                 elif command.lower() == "chat":
                     room_name = args[0]
                     success, multicast_group = self.join_chat_room(room_name)
@@ -112,6 +117,7 @@ class MulticastChatClient:
                         print(f"Joined chat room {room_name} with multicast group {multicast_group}.")
                         self.CURRENT_MODE = "CHAT"
                         self.JOINED_ROOM = multicast_group
+
             elif self.CURRENT_MODE == "CHAT":
                 msg = message
                 if message == r"\quit":
@@ -131,8 +137,6 @@ class MulticastChatClient:
 # 1. Bye command
 # 2. Getdir command
 # 3. Deleteroom command
-            
-
 
 if __name__ == "__main__":
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
