@@ -169,6 +169,10 @@ class MulticastChatClient:
                     self.delete_chat_room(room_name)
                     continue
 
+                elif command.lower() == "bye":
+                    self.directory_sock.close()
+                    self.CURRENT_MODE = "DISCONNECTED"
+
             elif self.CURRENT_MODE == "CHAT":
                 msg = message
                 if message == r"\quit":
@@ -183,10 +187,6 @@ class MulticastChatClient:
                     name = ''
                 msg = name + msg
                 self.send_chat(multicast_group, msg)
-
-# TODO
-# 1. Bye command
-# 3. Deleteroom command
 
 if __name__ == "__main__":
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
