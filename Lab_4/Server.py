@@ -62,7 +62,7 @@ class ChatRoomDirectoryServer:
                     elif command == 'GET_MULTICAST_GROUP':
                         room_name = args[0]
                         multicast_group, port = self.directory.get_room_multicast_group(room_name)
-                        print(room_name)
+                        print(f"Device joined {room_name}")
                         
                         if multicast_group:
                             response = f"Multicast group for room {room_name}: {multicast_group, port}"
@@ -78,6 +78,8 @@ class ChatRoomDirectoryServer:
                     elif command == 'deleteroom':
                         room_name = args[0]
                         self.directory.delete_room(room_name)
+                        response = f"Room {room_name} sucessfully deleted."
+                        client.send(response.encode('utf-8'))
 
             except Exception as e:
                 print(f"[ERROR] {e}")

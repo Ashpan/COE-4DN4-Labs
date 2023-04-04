@@ -60,7 +60,7 @@ class MulticastChatClient:
         self.directory_sock.send(f"deleteroom {room_name}".encode('utf-8'))
         response = self.directory_sock.recv(1024).decode('utf-8')
         print(response)
-        return "deleteroom" in response.lower()
+        return "sucessfully deleted" in response.lower()
 
     def join_chat_room(self, room_name):
         self.directory_sock.send(f"GET_MULTICAST_GROUP {room_name}".encode('utf-8'))
@@ -145,7 +145,11 @@ class MulticastChatClient:
 
             elif self.CURRENT_MODE == "CONNECTED":
                 if command.lower() == "makeroom":
-                    room_name, port, multicast_group = args
+                    try:
+                        room_name, port, multicast_group = args
+                    except ValueError:
+                        print("Invalid arguments. Please try again.")
+                        continue
                     self.create_chat_room(room_name, port, multicast_group)
 
                 elif command.lower() == "chat":
@@ -165,13 +169,18 @@ class MulticastChatClient:
                         print(f"Room Name: {key}, Address: {value[0]}, Port: {value[1]}\n")
 
                 elif command.lower() == "deleteroom":
-                    room_name = args[0]
+                    try:
+                        room_name = args[0]
+                    except IndexError:
+                        print("Invalid arguments. Please try again.")
+                        continue
                     self.delete_chat_room(room_name)
                     continue
 
                 elif command.lower() == "bye":
                     self.directory_sock.close()
                     self.CURRENT_MODE = "DISCONNECTED"
+                    print("Disconnected from directory server.")
 
             elif self.CURRENT_MODE == "CHAT":
                 msg = message
