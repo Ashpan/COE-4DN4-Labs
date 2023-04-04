@@ -40,10 +40,11 @@ class MulticastChatClient:
         
         try:
             self.recv_sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-            print("Successfully joined multicast group:", multicast_group)
         except socket.error as e:
             print("Failed to join multicast group:", e)
             return
+        
+        print("Successfully joined multicast group:", multicast_group)
         
     def leave_multicast_group(self, multicast_group):
         group = socket.inet_aton(multicast_group)
@@ -118,10 +119,10 @@ class MulticastChatClient:
         input_str = ""
 
         while True:
-            if (self.CURRENT_MODE == "CHAT"):
-                input_str = "CHAT>"
-            elif (self.CURRENT_MODE == "CONNECTED"):
+            if (self.CURRENT_MODE == "CONNECTED"):
                 input_str = "CRDS>"
+            elif (self.CURRENT_MODE == "CHAT"):
+                input_str = ""
             else:
                 input_str = ">"
 
@@ -156,7 +157,7 @@ class MulticastChatClient:
                     room_name = args[0]
                     success, multicast_group = self.join_chat_room(room_name)
                     if success:
-                        print(f"Joined chat room {room_name} with multicast group {multicast_group}.")
+                        print(f"\n*** CHATTING IN ROOM: {room_name} ***\n")
                         self.CURRENT_MODE = "CHAT"
                         self.JOINED_ROOM = multicast_group
 
