@@ -19,6 +19,7 @@ class MulticastChatClient:
     CURRENT_MODE = "DISCONNECTED"
     JOINED_ROOM = None
     NAME = None
+
     def __init__(self):
         self.local_ip = YOUR_LOCAL_IP
         
@@ -48,10 +49,11 @@ class MulticastChatClient:
         
         try:
             self.recv_sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-            print("Successfully joined multicast group:", multicast_group)
         except socket.error as e:
             print("Failed to join multicast group:", e)
             return
+
+        print("Successfully joined multicast group:", multicast_group)
         
     def leave_multicast_group(self, multicast_group):
         group = socket.inet_aton(multicast_group)
@@ -127,7 +129,7 @@ class MulticastChatClient:
 
         while True:
             if (self.CURRENT_MODE == "CHAT"):
-                input_str = "CHAT>"
+                input_str = ""
             elif (self.CURRENT_MODE == "CONNECTED"):
                 input_str = "CRDS>"
             else:
@@ -164,7 +166,7 @@ class MulticastChatClient:
                     room_name = args[0]
                     success, multicast_group = self.join_chat_room(room_name)
                     if success:
-                        print(f"Joined chat room {room_name} with multicast group {multicast_group}.")
+                        print(f"\n*** CHATTING IN ROOM: {room_name} ***\n")                        
                         self.CURRENT_MODE = "CHAT"
                         self.JOINED_ROOM = multicast_group
 
@@ -254,38 +256,43 @@ class ChatRoomDirectoryServer:
         while True:
             try:
                 msg = client.recv(1024).decode('utf-8')
-                if msg:
-                    command, *args = msg.split(' ')
-                    print(f"command {command}")
-                    if command.lower() == 'makeroom':
-                        room_name, port, multicast_group = args
-                        if self.directory.create_room(room_name, port, multicast_group):
-                            response = f"Room {room_name} created with multicast group {multicast_group}."
-                        else:
-                            response = f"Room {room_name} already exists."
-                        client.send(response.encode('utf-8'))
 
-                    elif command == 'GET_MULTICAST_GROUP':
-                        room_name = args[0]
-                        multicast_group, port = self.directory.get_room_multicast_group(room_name)
-                        print(f"Device joined {room_name}")
-                        
-                        if multicast_group:
-                            response = f"Multicast group for room {room_name}: {multicast_group, port}"
-                        else:
-                            response = f"Room {room_name} not found."
-                        client.send(response.encode('utf-8'))
+                if not msg:
+                    # Client has closed the connection
+                    print(f"Client {addr} has closed the connection")
+                    break
 
-                    elif command == 'getdir':
-                        d = self.directory.get_directory_list()
-                        response = pickle.dumps(d)
-                        client.send(response)
+                command, *args = msg.split(' ')
+                print(f"command {command}")
+                if command.lower() == 'makeroom':
+                    room_name, port, multicast_group = args
+                    if self.directory.create_room(room_name, port, multicast_group):
+                        response = f"Room {room_name} created with multicast group {multicast_group}."
+                    else:
+                        response = f"Room {room_name} already exists."
+                    client.send(response.encode('utf-8'))
 
-                    elif command == 'deleteroom':
-                        room_name = args[0]
-                        self.directory.delete_room(room_name)
-                        response = f"Room {room_name} sucessfully deleted."
-                        client.send(response.encode('utf-8'))
+                elif command == 'GET_MULTICAST_GROUP':
+                    room_name = args[0]
+                    multicast_group, port = self.directory.get_room_multicast_group(room_name)
+                    print(f"Device joined {room_name}")
+                    
+                    if multicast_group:
+                        response = f"Multicast group for room {room_name}: {multicast_group, port}"
+                    else:
+                        response = f"Room {room_name} not found."
+                    client.send(response.encode('utf-8'))
+
+                elif command == 'getdir':
+                    d = self.directory.get_directory_list()
+                    response = pickle.dumps(d)
+                    client.send(response)
+
+                elif command == 'deleteroom':
+                    room_name = args[0]
+                    self.directory.delete_room(room_name)
+                    response = f"Room {room_name} sucessfully deleted."
+                    client.send(response.encode('utf-8'))
 
             except Exception as e:
                 print(f"[ERROR] {e}")
