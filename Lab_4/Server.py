@@ -20,6 +20,13 @@ class ChatRoomDirectory:
         print(self.chat_rooms)
 
         return True
+    
+    def delete_room(self, room_name):
+        try:
+            del self.chat_rooms[room_name]
+            print(f"Deleted {room_name}")
+        except:
+            print(f"Room name {room_name} does not exist")
 
     def get_room_multicast_group(self, room_name):
         return self.chat_rooms.get(room_name)
@@ -67,6 +74,10 @@ class ChatRoomDirectoryServer:
                         d = self.directory.get_directory_list()
                         response = pickle.dumps(d)
                         client.send(response)
+
+                    elif command == 'deleteroom':
+                        room_name = args[0]
+                        self.directory.delete_room(room_name)
 
             except Exception as e:
                 print(f"[ERROR] {e}")

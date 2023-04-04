@@ -55,6 +55,12 @@ class MulticastChatClient:
         response = self.directory_sock.recv(1024).decode('utf-8')
         print(response)
         return "made room" in response.lower()
+    
+    def delete_chat_room(self, room_name):
+        self.directory_sock.send(f"deleteroom {room_name}".encode('utf-8'))
+        response = self.directory_sock.recv(1024).decode('utf-8')
+        print(response)
+        return "deleteroom" in response.lower()
 
     def join_chat_room(self, room_name):
         self.directory_sock.send(f"GET_MULTICAST_GROUP {room_name}".encode('utf-8'))
@@ -153,8 +159,15 @@ class MulticastChatClient:
                 elif command.lower() == "getdir":
                     self.send_command(command.lower())
                     response = self.directory_sock.recv(1024)
-                    direct = pickle.loads(response)
-                    print(direct)
+                    dir = pickle.loads(response)
+                    
+                    for key, value in dir.items():
+                        print(f"Room Name: {key}, Address: {value[0]}, Port: {value[1]}\n")
+
+                elif command.lower() == "deleteroom":
+                    room_name = args[0]
+                    self.delete_chat_room(room_name)
+                    continue
 
             elif self.CURRENT_MODE == "CHAT":
                 msg = message
@@ -173,7 +186,6 @@ class MulticastChatClient:
 
 # TODO
 # 1. Bye command
-# 2. Getdir command
 # 3. Deleteroom command
 
 if __name__ == "__main__":
