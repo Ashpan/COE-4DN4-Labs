@@ -107,7 +107,7 @@ class MulticastChatClient:
                     print("You are not connected to the directory server. Please connect first.")
 
             elif self.CURRENT_MODE == "CONNECTED":
-                if command.lower() == "makeroom": #TODO: Add port number as a parameter
+                if command.lower() == "makeroom":
                     room_name, port, multicast_group = args
                     self.create_chat_room(room_name, port, multicast_group)
                 elif command.lower() == "chat":
