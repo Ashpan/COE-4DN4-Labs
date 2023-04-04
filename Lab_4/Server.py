@@ -1,6 +1,6 @@
 import socket
 import threading
-import json
+import pickle
 
 SERVER_IP = '127.0.0.1'
 SERVER_PORT = 5555
@@ -43,6 +43,7 @@ class ChatRoomDirectoryServer:
                 msg = client.recv(1024).decode('utf-8')
                 if msg:
                     command, *args = msg.split(' ')
+                    print(f"command {command}")
                     if command.lower() == 'makeroom':
                         room_name, port, multicast_group = args
                         if self.directory.create_room(room_name, port, multicast_group):
@@ -63,8 +64,9 @@ class ChatRoomDirectoryServer:
                         client.send(response.encode('utf-8'))
 
                     elif command == 'getdir':
-                        response = self.directory.get_directory_list()
-                        client.send(response.encode('utf-8'))
+                        d = self.directory.get_directory_list()
+                        response = pickle.dumps(d)
+                        client.send(response)
 
             except Exception as e:
                 print(f"[ERROR] {e}")

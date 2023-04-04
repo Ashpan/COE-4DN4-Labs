@@ -2,6 +2,7 @@ import socket
 import struct
 import threading
 import traceback
+import pickle
 
 DIRECTORY_SERVER_IP = '127.0.0.1'
 DIRECTORY_SERVER_PORT = 5555
@@ -35,7 +36,6 @@ class MulticastChatClient:
             print("Invalid multicast group IP address:", multicast_group)
             return
         
-        # TODO: Debug why mreq is not the right format?
         mreq = struct.pack('4sL', group, socket.INADDR_ANY)
         
         try:
@@ -94,9 +94,15 @@ class MulticastChatClient:
                 self.recv_sock.close()
                 break
 
-    def send(self, multicast_group, msg):
+    def send_chat(self, multicast_group, msg):
         try:
             self.send_sock.sendto(msg.encode('utf-8'), (multicast_group, MULTICAST_PORT))
+        except Exception:
+            traceback.print_exc()
+
+    def send_command(self, cmd):
+        try:
+            self.directory_sock.send(cmd.encode('utf-8'))
         except Exception:
             traceback.print_exc()
 
@@ -145,10 +151,10 @@ class MulticastChatClient:
                         self.JOINED_ROOM = multicast_group
 
                 elif command.lower() == "getdir":
-                    msg = 'getdir'
-                    self.send(DIRECTORY_SERVER_IP, msg)
-                    response = self.directory_sock.recv(1024).decode('utf-8')
-                    print(response)
+                    self.send_command(command.lower())
+                    response = self.directory_sock.recv(1024)
+                    direct = pickle.loads(response)
+                    print(direct)
 
             elif self.CURRENT_MODE == "CHAT":
                 msg = message
@@ -163,7 +169,7 @@ class MulticastChatClient:
                 else:
                     name = ''
                 msg = name + msg
-                self.send(multicast_group, msg)
+                self.send_chat(multicast_group, msg)
 
 # TODO
 # 1. Bye command
